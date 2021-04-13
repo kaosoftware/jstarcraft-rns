@@ -9,9 +9,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.luaj.vm2.LuaTable;
 
-import com.jstarcraft.core.common.configuration.MapConfigurator;
+import com.jstarcraft.core.common.option.MapOption;
 import com.jstarcraft.core.script.GroovyExpression;
 import com.jstarcraft.core.script.JsExpression;
+import com.jstarcraft.core.script.KotlinExpression;
 import com.jstarcraft.core.script.LuaExpression;
 import com.jstarcraft.core.script.PythonExpression;
 import com.jstarcraft.core.script.RubyExpression;
@@ -23,6 +24,37 @@ import com.jstarcraft.core.utility.StringUtility;
 public class ScriptTestCase {
 
     private static final ClassLoader loader = ScriptTestCase.class.getClassLoader();
+
+    /**
+     * 使用BeanShell脚本与JStarCraft框架交互
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testBeanShell() throws Exception {
+        // 获取BeanShell脚本
+        File file = new File(ScriptTestCase.class.getResource("Model.bsh").toURI());
+        String script = FileUtils.readFileToString(file, StringUtility.CHARSET);
+
+        // 设置BeanShell脚本使用到的Java类
+        ScriptContext context = new ScriptContext();
+        context.useClasses(Properties.class, Assert.class);
+        context.useClass("Option", MapOption.class);
+        context.useClasses("com.jstarcraft.ai.evaluate");
+        context.useClasses("com.jstarcraft.rns.task");
+        context.useClasses("com.jstarcraft.rns.model.benchmark");
+        // 设置BeanShell脚本使用到的Java变量
+        ScriptScope scope = new ScriptScope();
+        scope.createAttribute("loader", loader);
+
+        // 执行BeanShell脚本
+        ScriptExpression expression = new GroovyExpression(context, scope, script);
+        Map<String, Float> data = expression.doWith(Map.class);
+        Assert.assertEquals(0.005825241F, data.get("precision"), 0F);
+        Assert.assertEquals(0.011579763F, data.get("recall"), 0F);
+        Assert.assertEquals(1.2708743F, data.get("mae"), 0F);
+        Assert.assertEquals(2.425075F, data.get("mse"), 0F);
+    }
 
     /**
      * 使用Groovy脚本与JStarCraft框架交互
@@ -38,7 +70,7 @@ public class ScriptTestCase {
         // 设置Groovy脚本使用到的Java类
         ScriptContext context = new ScriptContext();
         context.useClasses(Properties.class, Assert.class);
-        context.useClass("Configurator", MapConfigurator.class);
+        context.useClass("Option", MapOption.class);
         context.useClasses("com.jstarcraft.ai.evaluate");
         context.useClasses("com.jstarcraft.rns.task");
         context.useClasses("com.jstarcraft.rns.model.benchmark");
@@ -69,7 +101,7 @@ public class ScriptTestCase {
         // 设置JS脚本使用到的Java类
         ScriptContext context = new ScriptContext();
         context.useClasses(Properties.class, Assert.class);
-        context.useClass("Configurator", MapConfigurator.class);
+        context.useClass("Option", MapOption.class);
         context.useClasses("com.jstarcraft.ai.evaluate");
         context.useClasses("com.jstarcraft.rns.task");
         context.useClasses("com.jstarcraft.rns.model.benchmark");
@@ -79,11 +111,42 @@ public class ScriptTestCase {
 
         // 执行JS脚本
         ScriptExpression expression = new JsExpression(context, scope, script);
-        Map<String, Double> data = expression.doWith(Map.class);
-        Assert.assertEquals(0.005825241096317768D, data.get("precision"), 0D);
-        Assert.assertEquals(0.011579763144254684D, data.get("recall"), 0D);
-        Assert.assertEquals(1.270874261856079D, data.get("mae"), 0D);
-        Assert.assertEquals(2.425075054168701D, data.get("mse"), 0D);
+        Map<String, Float> data = expression.doWith(Map.class);
+        Assert.assertEquals(0.005825241096317768F, data.get("precision"), 0F);
+        Assert.assertEquals(0.011579763144254684F, data.get("recall"), 0F);
+        Assert.assertEquals(1.270874261856079F, data.get("mae"), 0F);
+        Assert.assertEquals(2.425075054168701F, data.get("mse"), 0F);
+    }
+    
+    /**
+     * 使用Kotlin脚本与JStarCraft框架交互
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testKotlin() throws Exception {
+        // 获取Kotlin脚本
+        File file = new File(ScriptTestCase.class.getResource("Model.kt").toURI());
+        String script = FileUtils.readFileToString(file, StringUtility.CHARSET);
+
+        // 设置Kotlin脚本使用到的Java类
+        ScriptContext context = new ScriptContext();
+        context.useClasses(Properties.class, Assert.class);
+        context.useClass("Option", MapOption.class);
+        context.useClasses("com.jstarcraft.ai.evaluate");
+        context.useClasses("com.jstarcraft.rns.task");
+        context.useClasses("com.jstarcraft.rns.model.benchmark");
+        // 设置Kotlin脚本使用到的Java变量
+        ScriptScope scope = new ScriptScope();
+        scope.createAttribute("loader", loader);
+
+        // 执行Kotlin脚本
+        ScriptExpression expression = new KotlinExpression(context, scope, script);
+        Map<String, Float> data = expression.doWith(Map.class);
+        Assert.assertEquals(0.005825241096317768F, data.get("precision"), 0F);
+        Assert.assertEquals(0.011579763144254684F, data.get("recall"), 0F);
+        Assert.assertEquals(1.270874261856079F, data.get("mae"), 0F);
+        Assert.assertEquals(2.425075054168701F, data.get("mse"), 0F);
     }
 
     /**
@@ -106,7 +169,7 @@ public class ScriptTestCase {
         // 设置Lua脚本使用到的Java类
         ScriptContext context = new ScriptContext();
         context.useClasses(Properties.class, Assert.class);
-        context.useClass("Configurator", MapConfigurator.class);
+        context.useClass("Option", MapOption.class);
         context.useClasses("com.jstarcraft.ai.evaluate");
         context.useClasses("com.jstarcraft.rns.task");
         context.useClasses("com.jstarcraft.rns.model.benchmark");
@@ -140,7 +203,7 @@ public class ScriptTestCase {
         // 设置Python脚本使用到的Java类
         ScriptContext context = new ScriptContext();
         context.useClasses(Properties.class, Assert.class);
-        context.useClass("Configurator", MapConfigurator.class);
+        context.useClass("Option", MapOption.class);
         context.useClasses("com.jstarcraft.ai.evaluate");
         context.useClasses("com.jstarcraft.rns.task");
         context.useClasses("com.jstarcraft.rns.model.benchmark");
@@ -171,7 +234,7 @@ public class ScriptTestCase {
         // 设置Ruby脚本使用到的Java类
         ScriptContext context = new ScriptContext();
         context.useClasses(Properties.class, Assert.class);
-        context.useClass("Configurator", MapConfigurator.class);
+        context.useClass("Option", MapOption.class);
         context.useClasses("com.jstarcraft.ai.evaluate");
         context.useClasses("com.jstarcraft.rns.task");
         context.useClasses("com.jstarcraft.rns.model.benchmark");
